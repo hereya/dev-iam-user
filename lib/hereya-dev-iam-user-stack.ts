@@ -9,8 +9,8 @@ import { Construct } from 'constructs';
  * Collects all IAM policy env vars (iamPolicy* / IAM_POLICY_*) from the
  * project environment and attaches them to a single IAM user. The user's
  * access key credentials are stored in SSM Parameter Store and exported
- * as outputs (devAwsAccessKeyId, devAwsSecretAccessKey, devAwsRegion).
- * Users can map these to AWS_ACCESS_KEY_ID etc. via hereyastaticenv.
+ * as outputs (awsAccessKeyId, awsSecretAccessKey, awsRegion).
+ * With snakeCase: true, hereya auto-creates AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION.
  *
  * This allows developers to run their app locally with the exact same
  * permissions that the deployed version would have, without needing
@@ -72,28 +72,29 @@ export class HereyaDevIamUserStack extends cdk.Stack {
 
     // Outputs — these become env vars in the workspace.
     // CloudFormation output keys must be alphanumeric (no underscores).
-    // Use camelCase keys; users can map to AWS_* env vars via hereyastaticenv.
-    new cdk.CfnOutput(this, 'devAwsAccessKeyId', {
+    // With snakeCase: true in hereyarc.yaml, hereya auto-generates UPPER_SNAKE_CASE
+    // duplicates: awsAccessKeyId → AWS_ACCESS_KEY_ID, awsSecretAccessKey → AWS_SECRET_ACCESS_KEY
+    new cdk.CfnOutput(this, 'awsAccessKeyId', {
       value: accessKeyIdParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user access key ID',
     });
 
-    new cdk.CfnOutput(this, 'devAwsSecretAccessKey', {
+    new cdk.CfnOutput(this, 'awsSecretAccessKey', {
       value: secretKeyParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user secret access key',
     });
 
-    new cdk.CfnOutput(this, 'devAwsRegion', {
+    new cdk.CfnOutput(this, 'awsRegion', {
       value: this.region,
       description: 'AWS region for the dev IAM user',
     });
 
-    new cdk.CfnOutput(this, 'devIamUserName', {
+    new cdk.CfnOutput(this, 'iamUserName', {
       value: user.userName,
       description: 'Name of the dev IAM user',
     });
 
-    new cdk.CfnOutput(this, 'devIamUserArn', {
+    new cdk.CfnOutput(this, 'iamUserArn', {
       value: user.userArn,
       description: 'ARN of the dev IAM user',
     });
