@@ -69,21 +69,25 @@ export class HereyaDevIamUserStack extends cdk.Stack {
       tier: ssm.ParameterTier.STANDARD,
     });
 
-    // Outputs — these become env vars in the workspace
-    new cdk.CfnOutput(this, 'AWS_ACCESS_KEY_ID', {
+    // Outputs — these become env vars in the workspace.
+    // Use overrideLogicalId to preserve underscores (CDK strips them from logical IDs).
+    const accessKeyIdOutput = new cdk.CfnOutput(this, 'AccessKeyId', {
       value: accessKeyIdParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user access key ID',
     });
+    accessKeyIdOutput.overrideLogicalId('AWS_ACCESS_KEY_ID');
 
-    new cdk.CfnOutput(this, 'AWS_SECRET_ACCESS_KEY', {
+    const secretAccessKeyOutput = new cdk.CfnOutput(this, 'SecretAccessKey', {
       value: secretKeyParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user secret access key',
     });
+    secretAccessKeyOutput.overrideLogicalId('AWS_SECRET_ACCESS_KEY');
 
-    new cdk.CfnOutput(this, 'AWS_REGION', {
+    const regionOutput = new cdk.CfnOutput(this, 'Region', {
       value: this.region,
       description: 'AWS region for the dev IAM user',
     });
+    regionOutput.overrideLogicalId('AWS_REGION');
 
     new cdk.CfnOutput(this, 'devIamUserName', {
       value: user.userName,
