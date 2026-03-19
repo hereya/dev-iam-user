@@ -1,3 +1,4 @@
 infra: aws
 iac: cdk
 devDeploy: true
+snakeCase: true
