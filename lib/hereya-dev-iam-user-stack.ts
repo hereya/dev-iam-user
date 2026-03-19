@@ -9,7 +9,8 @@ import { Construct } from 'constructs';
  * Collects all IAM policy env vars (iamPolicy* / IAM_POLICY_*) from the
  * project environment and attaches them to a single IAM user. The user's
  * access key credentials are stored in SSM Parameter Store and exported
- * as outputs (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_REGION).
+ * as outputs (devAwsAccessKeyId, devAwsSecretAccessKey, devAwsRegion).
+ * Users can map these to AWS_ACCESS_KEY_ID etc. via hereyastaticenv.
  *
  * This allows developers to run their app locally with the exact same
  * permissions that the deployed version would have, without needing
@@ -70,24 +71,22 @@ export class HereyaDevIamUserStack extends cdk.Stack {
     });
 
     // Outputs — these become env vars in the workspace.
-    // Use overrideLogicalId to preserve underscores (CDK strips them from logical IDs).
-    const accessKeyIdOutput = new cdk.CfnOutput(this, 'AccessKeyId', {
+    // CloudFormation output keys must be alphanumeric (no underscores).
+    // Use camelCase keys; users can map to AWS_* env vars via hereyastaticenv.
+    new cdk.CfnOutput(this, 'devAwsAccessKeyId', {
       value: accessKeyIdParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user access key ID',
     });
-    accessKeyIdOutput.overrideLogicalId('AWS_ACCESS_KEY_ID');
 
-    const secretAccessKeyOutput = new cdk.CfnOutput(this, 'SecretAccessKey', {
+    new cdk.CfnOutput(this, 'devAwsSecretAccessKey', {
       value: secretKeyParam.parameterArn,
       description: 'SSM parameter ARN for the dev IAM user secret access key',
     });
-    secretAccessKeyOutput.overrideLogicalId('AWS_SECRET_ACCESS_KEY');
 
-    const regionOutput = new cdk.CfnOutput(this, 'Region', {
+    new cdk.CfnOutput(this, 'devAwsRegion', {
       value: this.region,
       description: 'AWS region for the dev IAM user',
     });
-    regionOutput.overrideLogicalId('AWS_REGION');
 
     new cdk.CfnOutput(this, 'devIamUserName', {
       value: user.userName,
