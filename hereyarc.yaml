@@ -2,3 +2,9 @@ infra: aws
 iac: cdk
 devDeploy: true
 snakeCase: true
+outputs:
+  awsAccessKeyId: {}
+  awsSecretAccessKey: {}
+  awsRegion: {}
+  iamUserArn: {}
+  iamUserName: {}
