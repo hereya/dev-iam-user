@@ -1,6 +1,6 @@
 name: hereya/dev-iam-user
-version: 0.1.0
-description: "Create an IAM user with project permissions for local development"
+version: 0.1.1
+description: "Create an IAM user with project permissions for local development. Uses an AWS-managed-style ManagedPolicy (6 KB cap) so the aggregate doesn't trip the 2 KB inline-policy limit."
 visibility: public
 infra: aws
 iac: cdk

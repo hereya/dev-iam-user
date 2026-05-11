@@ -34,19 +34,36 @@ export class HereyaDevIamUserStack extends cdk.Stack {
       userName,
     });
 
-    // Attach all collected IAM policies to the user
+    // Collect all statements from the iamPolicy* env vars into a single
+    // managed policy. Why not user.addToPolicy() like before? That creates
+    // an inline DefaultPolicy on the IAM user, which AWS caps at 2,048
+    // bytes — once a workspace has cognito + postmark + s3 + ... the
+    // aggregate easily blows past that:
+    //   "Maximum policy size of 2048 bytes exceeded for user ..."
+    // ManagedPolicy is the canonical answer: 6,144 bytes per policy, up
+    // to 10 attached per user, so ~60 KB of headroom. We keep it as one
+    // policy for now (current real-world usage is ~2 KB) — if it ever
+    // exceeds 6 KB, split per env-var iteratively.
+    const allStatements: iam.PolicyStatement[] = [];
     for (const [, value] of policyEntries) {
       if (!value) continue;
       try {
         const policy = JSON.parse(value);
         if (policy.Statement && Array.isArray(policy.Statement)) {
           for (const statement of policy.Statement) {
-            user.addToPolicy(iam.PolicyStatement.fromJson(statement));
+            allStatements.push(iam.PolicyStatement.fromJson(statement));
           }
         }
       } catch {
         // Skip malformed policy JSON
       }
+    }
+    if (allStatements.length > 0) {
+      const managedPolicy = new iam.ManagedPolicy(this, 'DevUserManagedPolicy', {
+        description: `Aggregated workspace permissions for dev IAM user ${userName}`,
+        statements: allStatements,
+      });
+      user.addManagedPolicy(managedPolicy);
     }
 
     // Create access key for the user
